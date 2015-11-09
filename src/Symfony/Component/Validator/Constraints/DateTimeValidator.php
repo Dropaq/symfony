@@ -13,14 +13,16 @@ namespace Symfony\Component\Validator\Constraints;
 
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * @author Bernhard Schussek <bschussek@gmail.com>
  */
-class DateTimeValidator extends DateValidator
+class DateTimeValidator extends ConstraintValidator
 {
-    const PATTERN = '/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/';
+    const PATTERN_TIME_REQUIRED = '/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/';
+    const PATTERN_TIME_OPTIONAL = '/^(\d{4})-(\d{2})-(\d{2})( (\d{2}):(\d{2}):(\d{2}))?$/';
 
     /**
      * {@inheritdoc}
@@ -41,7 +43,7 @@ class DateTimeValidator extends DateValidator
 
         $value = (string) $value;
 
-        if (!preg_match(static::PATTERN, $value, $matches)) {
+        if (!preg_match(static::PATTERN_TIME_REQUIRED, $value, $matches)) {
             if ($this->context instanceof ExecutionContextInterface) {
                 $this->context->buildViolation($constraint->message)
                     ->setParameter('{{ value }}', $this->formatValue($value))
@@ -57,7 +59,7 @@ class DateTimeValidator extends DateValidator
             return;
         }
 
-        if (!DateValidator::checkDate($matches[1], $matches[2], $matches[3])) {
+        if (!static::checkDate($matches[1], $matches[2], $matches[3])) {
             if ($this->context instanceof ExecutionContextInterface) {
                 $this->context->buildViolation($constraint->message)
                     ->setParameter('{{ value }}', $this->formatValue($value))
@@ -71,7 +73,7 @@ class DateTimeValidator extends DateValidator
             }
         }
 
-        if (!TimeValidator::checkTime($matches[4], $matches[5], $matches[6])) {
+        if (!static::checkTime($matches[4], $matches[5], $matches[6])) {
             if ($this->context instanceof ExecutionContextInterface) {
                 $this->context->buildViolation($constraint->message)
                     ->setParameter('{{ value }}', $this->formatValue($value))
@@ -84,5 +86,37 @@ class DateTimeValidator extends DateValidator
                     ->addViolation();
             }
         }
+    }
+
+    /**
+     * Checks whether a time is valid.
+     *
+     * @param int $hour   The hour
+     * @param int $minute The minute
+     * @param int $second The second
+     *
+     * @return bool Whether the time is valid
+     *
+     * @internal
+     */
+    public static function checkTime($hour, $minute, $second)
+    {
+        return $hour >= 0 && $hour < 24 && $minute >= 0 && $minute < 60 && $second >= 0 && $second < 60;
+    }
+
+    /**
+     * Checks whether a date is valid.
+     *
+     * @param int $year  The year
+     * @param int $month The month
+     * @param int $day   The day
+     *
+     * @return bool Whether the date is valid
+     *
+     * @internal
+     */
+    public static function checkDate($year, $month, $day)
+    {
+        return checkdate($month, $day, $year);
     }
 }

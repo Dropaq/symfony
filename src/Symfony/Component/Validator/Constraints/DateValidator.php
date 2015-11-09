@@ -13,31 +13,14 @@ namespace Symfony\Component\Validator\Constraints;
 
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Constraint;
-use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * @author Bernhard Schussek <bschussek@gmail.com>
  */
-class DateValidator extends ConstraintValidator
+class DateValidator extends DateTimeValidator
 {
     const PATTERN = '/^(\d{4})-(\d{2})-(\d{2})$/';
-
-    /**
-     * Checks whether a date is valid.
-     *
-     * @param int $year  The year
-     * @param int $month The month
-     * @param int $day   The day
-     *
-     * @return bool Whether the date is valid
-     *
-     * @internal
-     */
-    public static function checkDate($year, $month, $day)
-    {
-        return checkdate($month, $day, $year);
-    }
 
     /**
      * {@inheritdoc}
@@ -74,7 +57,7 @@ class DateValidator extends ConstraintValidator
             return;
         }
 
-        if (!self::checkDate($matches[1], $matches[2], $matches[3])) {
+        if (!static::checkDate($matches[1], $matches[2], $matches[3])) {
             if ($this->context instanceof ExecutionContextInterface) {
                 $this->context->buildViolation($constraint->message)
                     ->setParameter('{{ value }}', $this->formatValue($value))
