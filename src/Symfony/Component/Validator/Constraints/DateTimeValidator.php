@@ -21,7 +21,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  */
 class DateTimeValidator extends ConstraintValidator
 {
-    const PATTERN_TIME_REQUIRED = '/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/';
+    const PATTERN = '/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/';
     const PATTERN_TIME_OPTIONAL = '/^(\d{4})-(\d{2})-(\d{2})( (\d{2}):(\d{2}):(\d{2}))?$/';
 
     /**
@@ -43,7 +43,7 @@ class DateTimeValidator extends ConstraintValidator
 
         $value = (string) $value;
 
-        if (!preg_match(static::PATTERN_TIME_REQUIRED, $value, $matches)) {
+        if (!preg_match($this->getPattern($constraint->requireTime), $value, $matches)) {
             if ($this->context instanceof ExecutionContextInterface) {
                 $this->context->buildViolation($constraint->message)
                     ->setParameter('{{ value }}', $this->formatValue($value))
@@ -73,7 +73,7 @@ class DateTimeValidator extends ConstraintValidator
             }
         }
 
-        if (!static::checkTime($matches[4], $matches[5], $matches[6])) {
+        if (true === $constraint->requireTime && !static::checkTime($matches[4], $matches[5], $matches[6])) {
             if ($this->context instanceof ExecutionContextInterface) {
                 $this->context->buildViolation($constraint->message)
                     ->setParameter('{{ value }}', $this->formatValue($value))
@@ -118,5 +118,17 @@ class DateTimeValidator extends ConstraintValidator
     public static function checkDate($year, $month, $day)
     {
         return checkdate($month, $day, $year);
+    }
+
+    /**
+     * Returns appropriate pattern whether time is required or not
+     *
+     * @param bool $isTimeRequired
+     *
+     * @return string
+     */
+    private function getPattern($isTimeRequired)
+    {
+        return true === $isTimeRequired ? static::PATTERN : static::PATTERN_TIME_OPTIONAL;
     }
 }

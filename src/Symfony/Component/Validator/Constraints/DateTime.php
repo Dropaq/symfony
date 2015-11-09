@@ -31,5 +31,6 @@ class DateTime extends Constraint
         self::INVALID_TIME_ERROR => 'INVALID_TIME_ERROR',
     );
 
+    public $requireTime = true;
     public $message = 'This value is not a valid datetime.';
 }
