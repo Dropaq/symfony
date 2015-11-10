@@ -107,4 +107,70 @@ class DateTimeValidatorTest extends AbstractConstraintValidatorTest
             array('2010-01-01 00:00:60', DateTime::INVALID_TIME_ERROR),
         );
     }
+
+    /**
+     * @param string $dateTime
+     *
+     * @dataProvider getValidDateTimesIfTimeNotRequired
+     */
+    public function testValidDateTimesIfTimeNotRequired($dateTime)
+    {
+        $constraint = new DateTime(array(
+            'requireTime' => false,
+        ));
+
+        $this->validator->validate($dateTime, $constraint);
+
+        $this->assertNoViolation();
+    }
+
+    /**
+     * @return array
+     */
+    public function getValidDateTimesIfTimeNotRequired()
+    {
+        return array(
+            array('2010-01-01'),
+            array('2010-01-01 01:02:03'),
+            array('1955-12-12 00:00:00'),
+            array('2030-05-31 23:59:59'),
+        );
+    }
+
+    /**
+     * @dataProvider getInvalidDateTimesIfTimeNotRequired
+     */
+    public function testInvalidDateTimesIfTimeNotRequired($dateTime, $code)
+    {
+        $constraint = new DateTime(array(
+            'message' => 'myMessage',
+            'requireTime' => false,
+        ));
+
+        $this->validator->validate($dateTime, $constraint);
+
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ value }}', '"'.$dateTime.'"')
+            ->setCode($code)
+            ->assertRaised();
+    }
+
+    /**
+     * @return array
+     */
+    public function getInvalidDateTimesIfTimeNotRequired()
+    {
+        return array(
+            array('foobar', DateTime::INVALID_FORMAT_ERROR),
+            array('00:00:00', DateTime::INVALID_FORMAT_ERROR),
+            array('2010-01-01 foobar', DateTime::INVALID_FORMAT_ERROR),
+            array('2010-01-01 00:00', DateTime::INVALID_FORMAT_ERROR),
+            array('2010-13-01 00:00:00', DateTime::INVALID_DATE_ERROR),
+            array('2010-04-32 00:00:00', DateTime::INVALID_DATE_ERROR),
+            array('2010-02-29 00:00:00', DateTime::INVALID_DATE_ERROR),
+            array('2010-01-01 24:00:00', DateTime::INVALID_TIME_ERROR),
+            array('2010-01-01 00:60:00', DateTime::INVALID_TIME_ERROR),
+            array('2010-01-01 00:00:60', DateTime::INVALID_TIME_ERROR),
+        );
+    }
 }

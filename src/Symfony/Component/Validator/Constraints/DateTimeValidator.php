@@ -73,7 +73,7 @@ class DateTimeValidator extends ConstraintValidator
             }
         }
 
-        if (true === $constraint->requireTime && !static::checkTime($matches[4], $matches[5], $matches[6])) {
+        if ((true === $constraint->requireTime || isset($matches[4])) && !static::checkTime($matches[5], $matches[6], $matches[7])) {
             if ($this->context instanceof ExecutionContextInterface) {
                 $this->context->buildViolation($constraint->message)
                     ->setParameter('{{ value }}', $this->formatValue($value))
